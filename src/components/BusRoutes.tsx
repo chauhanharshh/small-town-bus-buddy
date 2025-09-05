@@ -1,9 +1,15 @@
-import { Bus, Clock, Users, MapPin } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Bus, Clock, Users, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function BusRoutes() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  
   const busRoutes = [
     {
       id: "23",
@@ -75,6 +81,33 @@ export default function BusRoutes() {
     return "bg-green-500";
   };
 
+  const checkScrollButtons = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+      setTimeout(checkScrollButtons, 300);
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+      setTimeout(checkScrollButtons, 300);
+    }
+  };
+
+  useEffect(() => {
+    // Initialize scroll button states
+    setTimeout(checkScrollButtons, 100);
+  }, []);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -84,75 +117,103 @@ export default function BusRoutes() {
         </Badge>
       </div>
 
-      <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex space-x-4 pb-4">
-          {busRoutes.map((route) => (
-            <Card
-              key={route.id}
-              className="flex-shrink-0 w-80 shadow-medium hover:shadow-large transition-shadow cursor-pointer"
-            >
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 rounded-full ${route.color} flex items-center justify-center`}>
-                        <Bus className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">Bus {route.id}</h3>
-                        <p className="text-sm text-muted-foreground">{route.name}</p>
-                      </div>
-                    </div>
-                    <Badge className={getStatusColor(route.status)}>
-                      {route.status}
-                    </Badge>
-                  </div>
-
-                  {/* Next Arrival */}
-                  <div className="flex items-center space-x-2 p-3 rounded-lg bg-gradient-primary/10">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium text-primary">
-                      Next arrival: {route.nextArrival}
-                    </span>
-                  </div>
-
-                  {/* Occupancy */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {route.passengers}/{route.capacity} passengers
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <div className="w-2 h-2 rounded-full bg-muted"></div>
-                      <div className="w-2 h-2 rounded-full bg-muted"></div>
-                      <div className={`w-2 h-2 rounded-full ${getOccupancyColor(route.passengers, route.capacity)}`}></div>
-                    </div>
-                  </div>
-
-                  {/* Route Stops */}
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-foreground">Route Stops</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {route.stops.map((stop, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {stop}
+      <div className="relative">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="flex-shrink-0 h-8 w-8"
+            onClick={scrollLeft}
+            disabled={!canScrollLeft}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <div 
+            ref={scrollRef}
+            className="flex-1 overflow-x-auto scrollbar-hide"
+            onScroll={checkScrollButtons}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <div className="flex space-x-4 pb-4">
+              {busRoutes.map((route) => (
+                <Card
+                  key={route.id}
+                  className="flex-shrink-0 w-80 shadow-medium hover:shadow-large transition-shadow cursor-pointer"
+                >
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-10 h-10 rounded-full ${route.color} flex items-center justify-center`}>
+                            <Bus className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-foreground">Bus {route.id}</h3>
+                            <p className="text-sm text-muted-foreground">{route.name}</p>
+                          </div>
+                        </div>
+                        <Badge className={getStatusColor(route.status)}>
+                          {route.status}
                         </Badge>
-                      ))}
+                      </div>
+
+                      {/* Next Arrival */}
+                      <div className="flex items-center space-x-2 p-3 rounded-lg bg-gradient-primary/10">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium text-primary">
+                          Next arrival: {route.nextArrival}
+                        </span>
+                      </div>
+
+                      {/* Occupancy */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            {route.passengers}/{route.capacity} passengers
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 rounded-full bg-muted"></div>
+                          <div className="w-2 h-2 rounded-full bg-muted"></div>
+                          <div className={`w-2 h-2 rounded-full ${getOccupancyColor(route.passengers, route.capacity)}`}></div>
+                        </div>
+                      </div>
+
+                      {/* Route Stops */}
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium text-foreground">Route Stops</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {route.stops.map((stop, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {stop}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="icon"
+            className="flex-shrink-0 h-8 w-8"
+            onClick={scrollRight}
+            disabled={!canScrollRight}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      </div>
     </div>
   );
 }
