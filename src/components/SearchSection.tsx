@@ -3,6 +3,7 @@ import { Search, MapPin, Clock, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function SearchSection() {
   const [searchFrom, setSearchFrom] = useState("");
@@ -62,27 +63,34 @@ export default function SearchSection() {
             </Button>
           </div>
           
-          <div className="space-y-3">
-            {recentSearches.map((search, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {search.from} → {search.to}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{search.time}</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm">
-                  Search Again
-                </Button>
-              </div>
-            ))}
-          </div>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex space-x-4 pb-4">
+              {recentSearches.map((search, index) => (
+                <Card
+                  key={index}
+                  className="flex-shrink-0 w-72 shadow-soft hover:shadow-medium cursor-pointer transition-all"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {search.from} → {search.to}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{search.time}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        Search Again
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>
